@@ -1,4 +1,6 @@
 # Welcome to the One and only UdaciRacer Simulation Game
+![App screen shot](./imagesScreen/RaceSimulatorScreen.png "app screenShoot")
+
 
 ## Project Introduction
 

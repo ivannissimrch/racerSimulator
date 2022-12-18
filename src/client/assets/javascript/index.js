@@ -1,10 +1,10 @@
 // PROVIDED CODE BELOW (LINES 1 - 80) DO NOT REMOVE
-
 // The store will hold all information needed globally
 let store = {
   track_id: undefined,
   player_id: undefined,
   race_id: undefined,
+  newNames: ['Papa Oso','Marmaduke','Donald', 'Cesar', 'Norman']
 };
 
 //function to update store
@@ -21,20 +21,22 @@ document.addEventListener("DOMContentLoaded", function () {
 async function onPageLoad() {
 	//note modify get tracks and get racers api to include images??
   try {
-    getTracks().then((tracks) => {
-		console.log(tracks)
+    getTracks().then((tracks) => {		
       const html = renderTrackCards(tracks);
       renderAt("#tracks", html);
     });
 
     getRacers().then((racers) => {
-		console.log(racers)
+       racers.forEach((name, idx) => {      
+        name.driver_name = store.newNames[idx]
+       
+    });   
+		
       const html = renderRacerCars(racers);
       renderAt("#racers", html);
     });
   } catch (error) {
-    console.log("Problem getting tracks and racers ::", error.message);
-    console.error(error);
+    console.log("Problem getting tracks and racers ::", error.message);    
   }
 }
 
@@ -87,13 +89,7 @@ async function handleCreateRace() {
   // TODO - Get player_id and track_id from the store
   const {player_id, track_id }= store;
   // const race = TODO - invoke the API call to create the race, then save the result
-  let race = await createRace(player_id,track_id);
-  console.log(race)
-  // const driverNames = race.Cars.map(name => {
-  //   return name.driver_name = 'newName '
-  // } )
-  // console.log(driverNames)
-
+  let race = await createRace(player_id,track_id);  
   renderAt("#race", renderRaceStartView(race.Track));
   // TODO - update the store with the race id
   updateStore(store, { race_id: race.ID -1,
@@ -114,7 +110,11 @@ async function runRace(raceID) {
     // TODO - use Javascript's built in setInterval method to get race info every 500ms
     const timeInterval = setInterval(() => {getRace(raceID)
       .then(results => {
-        console.log(results.positions)
+        //change names on results board
+        results.positions.forEach((name, idx) => {          
+           name.driver_name = store.newNames[idx]          
+        });
+       
         //TODO - if the race info status property is "in-progress",
         //update the leaderboard by calling:
         //renderAt('#leaderBoard', raceProgress(res.positions))      
@@ -156,7 +156,6 @@ async function runCountdown() {
 }
 
 function handleSelectPodRacer(target) {
-  console.log("selected a pod", target.id);
 
   // remove class selected from all racer options
   const selected = document.querySelector("#racers .selected");
@@ -172,8 +171,7 @@ function handleSelectPodRacer(target) {
 }
 
 
-function handleSelectTrack(target) {
-  console.log("selected a track", target.id);
+function handleSelectTrack(target) { 
 
   // remove class selected from all track options
   const selected = document.querySelector("#tracks .selected");
@@ -188,8 +186,7 @@ function handleSelectTrack(target) {
   store.track_id = target.id
 }
 
-function handleAccelerate() {
-  console.log("accelerate button clicked");
+function handleAccelerate() {  
   // TODO - Invoke the API call to accelerate
   accelerate(store.race_id)
 }
@@ -213,15 +210,16 @@ function renderRacerCars(racers) {
 	`;
 }
 
-function renderRacerCard(racer) {
+function renderRacerCard(racer) {  
   const { id, driver_name, top_speed, acceleration, handling } = racer;
-
+  
   return `
 		<li class="card podracer" id="${id}">
+    <img src="/assets/images/${id}.jpg">
 			<h3>${driver_name}</h3>
-			<p>${top_speed}</p>
-			<p>${acceleration}</p>
-			<p>${handling}</p>
+			<p>Speed ${top_speed}</p>
+			<p>Acceleration ${acceleration}</p>
+			<p>Handling ${handling}</p>
 		</li>
 	`;
 }
@@ -364,21 +362,24 @@ async function getRacers() {
   }
 }
 
-//change this to use async await??
-async function createRace(player_id, track_id) {	
+async function createRace(player_id, track_id) {	  
+  try {
   player_id = parseInt(player_id);
   track_id = parseInt(track_id);
-  const body = { player_id, track_id };
-  console.log(body)
-
-  return fetch(`${SERVER}/api/races`, {
+  const body = { player_id, track_id }; 
+  const raceData = await fetch(`${SERVER}/api/races`, {
     method: "POST",
     ...defaultFetchOpts(),
     dataType: "jsonp",
     body: JSON.stringify(body),
   })
-    .then((res) => res.json())
-    .catch((err) => console.log("Problem with createRace request::", err));
+    return raceData.json();
+    
+  } catch (error) {
+    console.log(error)
+    
+  }  
+   
 }
 
 async function getRace(id) {
@@ -393,11 +394,11 @@ async function getRace(id) {
 }
 
 async function startRace(id) {
+    // no body or datatype needed for this request
   return fetch(`${SERVER}/api/races/${id}/start`, {
     method: "POST",
     ...defaultFetchOpts(),
-  })
-    //.then((res) => res.json())
+  })    
     .catch((err) => console.log("Problem with getRace request::", err));
 }
 

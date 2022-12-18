@@ -2,7 +2,9 @@
 
 /* -------------------  MOBILE  --------------------- */
 header {
-  background-image: url('https://via.placeholder.com/1150');
+  background-image: url('../images/track.jpg');
+  background-size:cover;
+  height: 50vh;  
 }
 
 main#two-columns {
@@ -15,8 +17,8 @@ main#two-columns section {
 }
 
 section#accelerate button {
-    height: 300px;
-    width: 300px;
+    height: 200px;
+    width: 200px;
     margin: 30px auto;
     border-radius: 180%;
     background-color: green;
